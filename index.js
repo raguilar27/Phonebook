@@ -1,7 +1,9 @@
 const express = require("express");
 const app = express();
 
-const persons = [
+app.use(express.json());
+
+let persons = [
   {
     id: 1,
     name: "Arto Hellas",
@@ -24,6 +26,11 @@ const persons = [
   },
 ];
 
+const generateId = () => {
+  const maxId = persons.length !== 0 ? persons.length : 0;
+  return maxId + 1;
+};
+
 app.get("/info", (req, res) => {
   const people = persons.length;
   const date = new Date();
@@ -38,6 +45,31 @@ app.get("/api/persons", (req, res) => {
   res.send(persons);
 });
 
+app.post("/api/persons", (req, res) => {
+  const body = req.body;
+
+  const found = persons.find((person) => person.name === body.name);
+
+  if (!body.name || !body.number) {
+    return res.status(400).json({
+      error: "Name or Number missing",
+    });
+  } else if (found) {
+    return res.status(400).json({
+      error: "Name alredy exists in the phonebook",
+    });
+  } else {
+    const person = {
+      id: generateId(),
+      name: body.name,
+      number: body.number,
+    };
+    persons = persons.concat(person);
+
+    res.json(person);
+  }
+});
+
 app.get("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
   const person = persons.find((person) => person.id === id);
@@ -50,8 +82,7 @@ app.get("/api/persons/:id", (req, res) => {
 
 app.delete("/api/persons/:id", (req, res) => {
   const id = Number(req.params.id);
-  const personIndex = persons.findIndex((person) => person.id === id);
-  persons.splice(personIndex, 1);
+  persons = persons.filter((person) => person.id !== id);
   res.status(204).end();
 });
 
