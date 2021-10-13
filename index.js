@@ -44,11 +44,16 @@ app.get("/api/persons/:id", (req, res) => {
   if (person) {
     res.send(person);
   } else {
-    res.send(404);
+    res.sendStatus(404).end();
   }
 });
 
-app.delete("/api/person/:id", (req, res) => {});
+app.delete("/api/persons/:id", (req, res) => {
+  const id = Number(req.params.id);
+  const personIndex = persons.findIndex((person) => person.id === id);
+  persons.splice(personIndex, 1);
+  res.status(204).end();
+});
 
 const PORT = 3001;
 app.listen(PORT, () => {
